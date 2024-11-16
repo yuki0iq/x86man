@@ -26,7 +26,7 @@ for chapter in chapters:
 
     for i, insn in enumerate(insn_toc["kids"]):
         mnem, desc = insn["title"].split('—')
-        mnem = mnem.strip()
+        mnem = ''.join(mnem.split())
         if i + 1 == len(insn_toc["kids"]):
             next_insn = {'page': last}
         else:
