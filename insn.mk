@@ -1,17 +1,15 @@
 JQ := jq
-MKDIR_P := mkdir -p
 PYTHON3 := python3
 LIBREOFFICE := libreoffice
+
+.SECONDARY:
 
 all: $(shell $(JQ) <output/insn.json -cr '.[] | .slug + ".html"')
 
 clean:
 	$(RM) -r output/insn
 
-output/insn: %:
-	$(MKDIR_P) $@
-
-output/insn/%.docx: extract-insn.py output/insn.json input.pdf output/insn
+output/insn/%.docx: extract-insn.py output/insn.json input.pdf
 	$(PYTHON3) $^ $@
 
 output/insn/%.html: output/insn/%.docx

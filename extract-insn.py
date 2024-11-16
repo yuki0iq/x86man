@@ -5,7 +5,7 @@ import os
 import pdf2docx
 import sys
 
-_, tocf, inf, _, outf = sys.argv
+_, tocf, inf, outf = sys.argv
 
 with open(tocf, 'r') as file:
     toc = json.load(file)
