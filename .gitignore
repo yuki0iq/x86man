@@ -1,0 +1,5 @@
+venv
+*.pdf
+*.docx
+*.html
+output
