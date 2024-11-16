@@ -1,6 +1,6 @@
 JQ := jq
 PYTHON3 := python3
-LIBREOFFICE := libreoffice
+UNOCONVERT := unoconvert
 
 .SECONDARY:
 
@@ -13,4 +13,4 @@ output/insn/%.docx: extract-insn.py output/insn.json input.pdf
 	$(PYTHON3) $^ $@
 
 output/insn/%.html: output/insn/%.docx
-	$(LIBREOFFICE) --convert-to "html:XHTML Writer File:UTF8" $< --outdir output/insn
+	$(UNOCONVERT) --convert-to "html" --output-filter "XHTML Writer File" --host-location local $< $@

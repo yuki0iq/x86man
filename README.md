@@ -7,13 +7,14 @@ Refer to [Intel® 64 and IA-32 Architectures Software Developer’s Manual](http
 ## Building
 
 ```shell
+$ unoserver &
 $ ln -s 325462-sdm-vol-1-2abcd-3abcd-4.pdf input.pdf
-$ make output/insn
+$ make -j4
 ```
 
 TODO: convert insane HTMLs to sane format
 
 ## Dependencies
 
-python3-pdf2docx, qpdf, libreoffice, jq
+python3-pdf2docx, qpdf, libreoffice, jq, python3-unoserver
 
