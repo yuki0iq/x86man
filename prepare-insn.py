@@ -8,7 +8,6 @@ _, inf, outf = sys.argv
 with open(inf, 'r') as file:
     toc = json.load(file)
 
-# Find TOC entries for instructions
 volume = next(i for i, el in enumerate(toc["kids"]) if "Instruction Set Reference" in el["title"])
 toc = toc["kids"][volume]
 chapters = [i for i, el in enumerate(toc["kids"]) if "Instruction Set Reference" in el["title"]]

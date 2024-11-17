@@ -27,7 +27,5 @@ def convert(outline):
 
 outline = convert(outline)
 
-# TODO: Add "last page" to TOC
-
 with open(outf, 'w') as file:
     json.dump(outline, file)

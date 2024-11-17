@@ -14,3 +14,6 @@ output/insn/%.docx: extract-insn.py output/insn.json input.pdf
 
 output/insn/%.html: output/insn/%.docx
 	$(UNOCONVERT) --convert-to "html" --output-filter "XHTML Writer File" --host-location local $< $@
+
+output/insn/%.md: html-to-markdown.py output/insn/%.html
+	$(PYTHON3) $^ $@
