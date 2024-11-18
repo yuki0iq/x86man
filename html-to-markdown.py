@@ -90,7 +90,10 @@ for header in soup.find_all(string="Operation"):
     for el in list(pre.descendants):
         if not el.get_text() and not el.name == "br":
             el.decompose()
-        if el.name == "p" or el.name == "span" and "style" not in el.attrs:
+        if el.name == "p":
+            el.insert_after(soup.new_tag("br"))
+            el.unwrap()
+        if el.name == "span" and "style" not in el.attrs:
             el.unwrap()
         if el.name == "span" and "style" in el.attrs:
             sty = {item.name: item.value for item in cssutils.parseStyle(el.attrs["style"], validate=False)}
