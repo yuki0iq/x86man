@@ -48,6 +48,8 @@ for sel, sty in selectors.items():
                 match.name = "h1"
             elif sty["font-size"] in ["8pt", "9pt", "9.5pt"]:
                 match.name = "h2"
+            if match.parent.name == "p":
+                match.parent.unwrap()
         if sty.get("font-family") == "NeoSansIntel" and sty.get("font-size") == "8pt":
             for el in match.parents:
                 match.decompose()
