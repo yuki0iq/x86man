@@ -81,8 +81,9 @@ for table in soup.find_all("table"):
     table.insert(0, thead)
 
 for img in soup.find_all("img"):
-    img.name = "i"
-    img.alt = f"[Image] {img.alt}"
+    alt = soup.new_tag("i")
+    alt.append(f"[Image] {img.alt}")
+    img.replace_with(alt)
 
 with open("/tmp/a.html", "w") as file: print(soup.prettify(), file=file)
 md = markdownify.MarkdownConverter().convert_soup(soup)
