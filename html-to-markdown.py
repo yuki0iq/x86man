@@ -18,12 +18,7 @@ for styles in soup.select('style'):
     css = cssutils.parseString(styles.encode_contents(), validate=False)
     for rule in css:
         if rule.type == rule.STYLE_RULE:
-            style = rule.selectorText
-            selectors[style] = {}
-            for item in rule.style:
-                propertyname = item.name
-                value = item.value
-                selectors[style][propertyname] = value
+            selectors[rule.selectorText] = {item.name: item.value for item in rule.style}
 
 for sel, sty in selectors.items():
     if not sel.startswith(".text-"):
