@@ -39,12 +39,12 @@ for sel, sty in selectors.items():
         if sty.get("font-weight") == "bold":
             match.wrap(soup.new_tag("b"))
         if sty.get("color") == "#075fa8":
-            assert sty["font-size"] in ["8pt", "9pt", "9.5pt", "10pt", "12pt"]
+            assert sty["font-size"] in ["8pt", "9pt", "9.5pt", "10pt", "11pt", "12pt"]
             if sty["font-size"] == "12pt":
                 global_name = match.get_text().replace('—', ' -- ')
                 match.name = "h1"
                 match.string.replace_with("Synopsis")
-            elif sty["font-size"] == "10pt":
+            elif sty["font-size"] in ["10pt", "11pt"]:
                 match.name = "h1"
             elif sty["font-size"] in ["8pt", "9pt", "9.5pt"]:
                 match.name = "h2"
