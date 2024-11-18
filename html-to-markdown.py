@@ -80,7 +80,32 @@ for img in soup.find_all("img"):
     alt.append(f"[Image] {img.alt}")
     img.replace_with(alt)
 
-with open("/tmp/a.html", "w") as file: print(soup.prettify(), file=file)
+for header in soup.find_all(string="Operation"):
+    header = header.parent
+    pre = soup.new_tag("pre")
+    for sib in list(header.next_siblings):
+        if sib.name == "h1":
+            break
+        pre.append(sib.extract())
+    for el in list(pre.descendants):
+        if not el.get_text() and not el.name == "br":
+            el.decompose()
+        if el.name == "p" or el.name == "span" and "style" not in el.attrs:
+            el.unwrap()
+        if el.name == "span" and "style" in el.attrs:
+            sty = {item.name: item.value for item in cssutils.parseStyle(el.attrs["style"], validate=False)}
+            assert sty['position'] == "absolute" and sty['left'][-2:] == "cm"
+            el.insert_before(' ' * max(0, int(float(sty['left'][:-2]) / .4 + .5)))
+            el.unwrap()
+    # TODO: Do not replace LF if '(text) LF (text)'; replace only "blank" '(space) LF (space)'
+    # TODO: Prettier automatic formatting
+    for nl in pre.find_all(string="\n"):
+        nl.replace_with('')
+    for br in pre.find_all("br"):
+        br.replace_with("\n")
+    header.insert_after(pre)
+
+with open("/tmp/a.html", "w") as file: print(soup, file=file)
 md = markdownify.MarkdownConverter().convert_soup(soup)
 md = '\n'.join(line if line.strip() else "" for line in md.split('\n'))
 md = re.sub('\n{2,}', '\n\n', md, flags=re.MULTILINE)
