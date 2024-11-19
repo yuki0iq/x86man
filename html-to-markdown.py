@@ -105,7 +105,7 @@ for header in soup.find_all(string="Operation"):
 
 soup.smooth()
 
-for header in soup.find_all(string=lambda x: "Compiler" in x):
+for header in soup.find_all(string=lambda x: "Intrinsic Equivalent" in x):
     header = next(el for el in header.parents if el.name == "h1")
     pre = soup.new_tag("pre")
     for sib in list(header.next_siblings):
