@@ -65,6 +65,10 @@ merge_siblings("h3", lambda _: True)
 merge_siblings("p", lambda match: next((ch.islower() for ch in match.get_text() + 'A' if ch.isalpha()), None))
 
 for table in soup.find_all("table"):
+    if len(table.find_all("img")) != 0:
+        table.decompose()
+        continue
+
     tr = next((el for el in table.children if el.name == "tr"), None)
     if not tr or any(el.name == "thead" for el in table.children):
         continue
@@ -74,11 +78,6 @@ for table in soup.find_all("table"):
             el.name = "th"
     thead.append(tr)
     table.insert(0, thead)
-
-for img in soup.find_all("img"):
-    alt = soup.new_tag("i")
-    alt.append(f"[Image] {img.alt}")
-    img.replace_with(alt)
 
 for header in soup.find_all(string="Operation"):
     header = header.parent
