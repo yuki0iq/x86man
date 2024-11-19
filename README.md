@@ -16,4 +16,4 @@ TODO: convert insane HTMLs to sane format
 
 ## Dependencies
 
-python-pdf2docx, qpdf, libreoffice, jq, python-unoserver, python-beautifulsoup4, python-cssutils, python-lxml, python-markdownify
+python-pdf2docx, qpdf, libreoffice, jq, python-unoserver, python-beautifulsoup4, python-cssutils, python-lxml, scdoc

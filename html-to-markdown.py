@@ -3,7 +3,6 @@
 import bs4
 import cssutils
 import json
-import markdownify
 import re
 import os
 import sys
@@ -99,32 +98,117 @@ for header in soup.find_all(string="Operation"):
             assert sty['position'] == "absolute" and sty['left'][-2:] == "cm"
             el.insert_before(' ' * max(0, int(float(sty['left'][:-2]) / .4 + .5)))
             el.unwrap()
-    # TODO: Do not replace LF if '(text) LF (text)'; replace only "blank" '(space) LF (space)'
     # TODO: Prettier automatic formatting
-    for nl in pre.find_all(string="\n"):
-        nl.replace_with('')
     for br in pre.find_all("br"):
         br.replace_with("\n")
     header.insert_after(pre)
 
-with open("/tmp/a.html", "w") as file: print(soup, file=file)
-md = markdownify.MarkdownConverter().convert_soup(soup)
-md = '\n'.join(line if line.strip() else "" for line in md.split('\n'))
-md = re.sub('\n{2,}', '\n\n', md, flags=re.MULTILINE)
-md = md.replace('\n\n\\- no title specified\n\n', '', 1)
-md = fr'''---
-title: {outf.replace("output/insn/", "").replace(".md", "")}
-section: 7intel
-header: Intel ISA Reference
-footer: Intel Software Developer's Manual
-date: January 1, 1970
----
+soup.smooth()
 
-Name
-====
+for header in soup.find_all(string=lambda x: "Compiler" in x):
+    header = next(el for el in header.parents if el.name == "h1")
+    pre = soup.new_tag("pre")
+    for sib in list(header.next_siblings):
+        if sib.name == "h1":
+            break
+        pre.append(sib.extract())
+    for br in pre.find_all("br"):
+        br.replace_with("\n")
+    header.insert_after(pre)
 
-{global_name}
 
-''' + md
+soup.smooth()
+
+# with open("/tmp/a.html", "w") as file: print(soup, file=file)
+
+def convert(soup):
+    def batch(children):
+        for child in children:
+            yield from convert(child)
+
+    def escape(s):
+        return s.replace('\\', r'\\').replace('_', r'\_').replace('*', r'\*').replace('#', r'\#')
+
+    if isinstance(soup, bs4.Comment):
+        pass
+
+    elif isinstance(soup, bs4.NavigableString):
+        yield escape(str(soup))
+
+    elif soup.name in "h1 h2 h3 h4 h5 h6".split():
+        yield "#" * int(soup.name[1:])
+        yield " "
+        yield from batch(soup.contents)
+        yield "\n\n"
+
+    elif soup.name == "pre":
+        yield "\n```\n"
+        yield from batch(soup.contents)
+        yield "\n```\n"
+
+    elif soup.name == "p":
+        yield "\n\n"
+        yield from batch(soup.contents)
+        yield "\n"
+
+    elif soup.name == "u":
+        yield "_"
+        yield from batch(soup.contents)
+        yield "_"
+
+    elif soup.name == "b":
+        yield "*"
+        yield from batch(soup.contents)
+        yield "*"
+
+    elif soup.name == "i":
+        yield "__"
+        yield from batch(soup.contents)
+        yield "__"
+
+    elif soup.name == "table":
+        yield "\n\n"
+        yield from batch(soup.contents)
+        yield "\n"
+
+    elif soup.name in ["td", "th"]:
+        text = soup.get_text().strip()
+        if soup.name == "th":
+            if not soup.previous_sibling:
+                yield "[[ "
+            elif not soup.next_sibling and text == "Description":
+                yield ":< "
+            else:
+                yield ":[ "
+            yield "*"
+        else:
+            yield "|  " if not soup.previous_sibling else ":  "
+
+        if "64" in text and "32" in text and soup.name == "th":
+            yield "64/32"
+        elif "CPUID" in text and "Feature" in text and soup.name == "th":
+            yield "CPUID"
+        elif "Compat" in text and "Leg" in text and soup.name == "th":
+            yield "Compat"
+        else:
+            yield from map(lambda x: x.replace('\n', ' ').strip(), batch(soup.contents))
+
+        if soup.name == "th":
+            yield "*"
+        yield "\n"
+
+    else:
+        yield from batch(soup.contents)
+
+name = outf[outf.rfind("/") + 1:outf.rfind(".")]
+md = f'''{name}(7intel) "Intel Software Developer's manual" "Intel x86 ISA reference"
+
+{''.join(convert(soup.find("body")))}
+
+# UNOFFICIAL
+
+This UNOFFICIAL, mechanically-separated, non-verified reference is provided for convenience, but it may be inc..pl.te or broK3n in various obvious or non-obvious ways. Refer to official manual for anything serious.
+'''
+
 with open(outf, 'w') as file:
     print(md, file=file)
