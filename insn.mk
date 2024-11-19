@@ -5,7 +5,7 @@ SCDOC := scdoc
 
 .SECONDARY:
 
-all: $(shell $(JQ) <output/insn.json -cr '.[] | .slug + ".html"')
+all: $(shell $(JQ) <output/insn.json -cr '.[] | .slug + ".7intel"')
 
 clean:
 	$(RM) -r output/insn
