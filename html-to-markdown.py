@@ -30,16 +30,17 @@ for sel, sty in selectors.items():
         assert sty.get("color") in ["#000", "#075fa8", "#6331af"]
         if sty.get("color") == "#075fa8" and "https://" not in match.get_text():
             assert sty["font-size"] in ["8pt", "9pt", "9.5pt", "10pt", "11pt", "12pt"]
+            header = next((el for el in match.parents if el.name == "p" or el.name == "h1"), None)
+            if header is None:
+                continue
             if sty["font-size"] == "12pt":
                 global_name = match.get_text().replace('—', ' -- ')
-                match.name = "h1"
-                match.string.replace_with("Synopsis")
+                header.name = "h1"
+                header.string = "Synopsis"
             elif sty["font-size"] in ["10pt", "11pt"]:
-                match.name = "h1"
+                header.name = "h1"
             elif sty["font-size"] in ["8pt", "9pt", "9.5pt"]:
-                match.name = "h2"
-            if match.parent.name == "p":
-                match.parent.unwrap()
+                header.name = "h2"
         if sty.get("text-decoration") == "underline":
             match.wrap(soup.new_tag("u"))
         if sty.get("font-style") == "italic":
@@ -137,7 +138,7 @@ def convert(soup):
             yield from convert(child)
 
     def escape(s):
-        return s.replace('\\', r'\\').replace('_', r'\_').replace('*', r'\*').replace('#', r'\#')
+        return s.replace('\\', r'\\').replace('_', r'\_').replace('*', r'\*').replace('#', r'\#').replace('|', r'\|').replace('[', r'\[').replace(']', r'\]')
 
     if isinstance(soup, bs4.Comment):
         pass
@@ -200,7 +201,7 @@ def convert(soup):
                         yield "|  "
                     else:
                         yield ":  "
-                    yield str(line[col]).replace('\n', ' ').strip()
+                    yield escape(str(line[col])).replace('\n', ' ').strip()
                     yield "\n"
 
     elif soup.name in ["td", "th"]:
@@ -240,7 +241,7 @@ def convert(soup):
     else:
         yield from batch(soup.contents)
 
-name = outf[outf.rfind("/") + 1:outf.rfind(".")].replace('+', '_').replace(',', '_')
+name = outf[outf.rfind("/") + 1:outf.rfind(".")].replace('+', '_').replace(',', '_').replace('[', '_').replace(']', '_')
 md = f'''{name}(7intel) "Intel Software Developer's manual" "Intel x86 ISA reference"
 
 {''.join(convert(soup.find("body")))}
@@ -249,6 +250,19 @@ md = f'''{name}(7intel) "Intel Software Developer's manual" "Intel x86 ISA refer
 
 This UNOFFICIAL, mechanically-separated, non-verified reference is provided for convenience, but it may be inc..pl.te or broK3n in various obvious or non-obvious ways. Refer to official manual for anything serious.
 '''
+md = '\n'.join(line if line.strip() else "" for line in md.split('\n'))
+md = re.sub(r'\n{2,}', r'\n\n', md, flags=re.MULTILINE)
+
+# CPUID: table in long table
+# LAR: bullet point list as a table
+# MPSADBW: broken image tables
+# PINSRW: broken <pre> in Operation
+# PSHUFB: broken <pre> in Operation and images
+# PSIGNB+PSIGNW+PSIGND: broken Operation
+# RSTORSSP: broken Operation
+# SYSRET: bullet point list as a table
+if name in ["CPUID", "LAR", "MPSADBW", "PINSRW", "PSHUFB", "PSIGNB_PSIGNW_PSIGND", "RSTORSSP", "SYSRET"]:
+    md = "TODO(7intel)\n\nTODO"
 
 with open(outf, 'w') as file:
     print(md, file=file)
